@@ -1,0 +1,5 @@
+1. Decided not to use asynchio or threading because all of these agents are running in same laptop at present but in real world implementation they would be having different cpus and hence different threads.
+Sources: 
+    1) https://realpython.com/python-concurrency/
+    2) https://realpython.com/intro-to-python-threading/
+    3) https://realpython.com/async-io-python/#setting-up-your-environment
