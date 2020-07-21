@@ -41,13 +41,16 @@ red_players = [None]*11
 blue_players = [None]*11
 ball = None
 
+canvas = None
+
 def windowDims():
     w = field_width + x_margin*2
     h = field_height + y_margin*2
     return "{}x{}".format(w, h)
 
 
-def drawField(canvas):
+def drawField():
+    global canvas
     # draw the background and boundary
     canvas.create_rectangle(x_margin, y_margin, x_margin+field_width, y_margin+field_height, outline=lines_color, fill=field_color, width=lines_width)
     
@@ -82,8 +85,8 @@ def drawField(canvas):
     canvas.pack(fill="both", expand=True)
 
 
-def initialize_players(canvas):
-    global red_players, blue_players, ball
+def initialize_players():
+    global red_players, blue_players, ball, canvas
     for i in range(11):
         px, py = red_pos[i]
         red_players[i] = canvas.create_oval(x_margin+px-player_radius, y_margin+py-player_radius, x_margin+px+player_radius, y_margin+py+player_radius, fill=red_color)
@@ -92,8 +95,9 @@ def initialize_players(canvas):
         blue_players[i] = canvas.create_oval(x_margin+px-player_radius, y_margin+py-player_radius, x_margin+px+player_radius, y_margin+py+player_radius, fill=blue_color)
     ball = canvas.create_oval(ball_pos[0]-ball_radius, ball_pos[1]-ball_radius, ball_pos[0]+ball_radius, ball_pos[1]+ball_radius, fill=ball_color)
 
-def update_positions(canvas):
-    global red_players, red_pos, blue_players, blue_pos, ball, ball_pos
+'''
+def update_positions():
+    global red_players, red_pos, blue_players, blue_pos, ball, ball_pos, canvas
     for i in range(11):
         canvas.move(red_players[i], 2, 0)
         red_pos[i] = (red_pos[i][0]+2, red_pos[i][1])
@@ -102,18 +106,45 @@ def update_positions(canvas):
         blue_pos[i] = (blue_pos[i][0], blue_pos[i][1]+2)
     canvas.move(ball, 2, 2)
     ball_pos = (ball_pos[0]+2, ball_pos[1]+2)
+'''
+
+def update_positions(team_red, team_blue, new_ball_pos): #list of agent objects
+    global red_players, red_pos, blue_players, blue_pos, ball, ball_pos, canvas
+    
+    for i in range(11):
+        old_x, old_y = red_pos[i]
+        new_x, new_y = team_red[i].get_coordinates()
+        diff_x, diff_y = new_x-old_x, new_y-old_y
+        canvas.move(red_players[i], diff_x, diff_y)
+        red_pos[i] = (new_x, new_y)
+    
+    for i in range(11):
+        old_x, old_y = blue_pos[i]
+        new_x, new_y = team_blue[i].get_coordinates()
+        diff_x, diff_y = new_x-old_x, new_y-old_y
+        canvas.move(blue_players[i], diff_x, diff_y)
+        blue_pos[i] = (new_x, new_y)
+    
+    new_x, new_y = new_ball_pos
+    old_x, old_y = ball_pos
+    diff_x, diff_y = new_x-old_x, new_y-old_y
+    canvas.move(ball, diff_x, diff_y)
+    ball_pos = new_ball_pos
 
 root = Tk()
 root.geometry(windowDims())
 root.title("Football")
 canvas = Canvas()
-drawField(canvas)
-initialize_players(canvas)
+drawField()
+initialize_players()
 
+'''
 for i in range(20):
     time.sleep(0.5)
     update_positions(canvas)
     root.update()
+'''
+
 
 root.mainloop()
 print("Window closed")
