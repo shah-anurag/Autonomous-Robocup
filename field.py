@@ -44,7 +44,6 @@ class Field:
         self.red_players = [None]*self.TEAM_SIZE
         self.blue_players = [None]*self.TEAM_SIZE
         self.ball = None
-
         self.root = Tk()
         self.canvas = Canvas()
 
@@ -134,12 +133,14 @@ class Field:
         self.ball_pos = new_ball_pos
 
     def main(self):
+        # root = Tk()
         self.root.geometry(self.windowDims())
         self.root.title("Robocup Simulation")
-        # self.drawField()
+        self.canvas = Canvas()
+        self.drawField()
         self.initialize_players()
-        # self.root.mainloop()
+        self.root.mainloop()
         print("Window closed")
 
-f = Field()
-f.main()
+# f = Field()
+# f.main()

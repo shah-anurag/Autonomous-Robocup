@@ -34,18 +34,18 @@ def initialize():
 
 		pA.append(p1A)
 		pB.append(p1B)
-
+		
 	field_ = field.Field()
 	field_p = multiprocessing.Process(target = field_.main)
 	field_p.start()
-
+	print('HHM')
 	return teamA, teamB, pA, pB, field_
 
 def stop(pA, pB):
 	for p in pA:
-		p.stop()
+		p.close()
 	for p in pB:
-		p.stop()
+		p.close()
 	return
 
 def main():
