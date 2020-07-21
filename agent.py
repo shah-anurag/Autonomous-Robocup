@@ -22,7 +22,7 @@ class Agent:
     			x,y = self.x, self.y
 	    		self.x, self.y = self.b.next(self.x, self.y)
 	    		print('Agent', self.id, 'moved to ', self.x, self.y, 'from', x, y)
-	    		time.sleep(1)
+	    		time.sleep(5)
 	    	except Exception as e:
 	    		print("Killed process for agent", self.id, "due to reason", e)
 	    		return
