@@ -28,10 +28,10 @@ def initialize():
 		
 		agentA = None
 		if i == 0:
-			agentA = agent.Agent(1, bA, WIDTH//2 - 1, HEIGHT//2)
+			agentA = agent.Agent(1, bA, WIDTH//2, HEIGHT//2)
 		else:
-			agentA = agent.Agent((i+1), bA, int(random.uniform(0, WIDTH//2)), int(random.uniform(0, HEIGHT-10)))
-		agentB = agent.Agent(-(i+1), bB, int(random.uniform(WIDTH//2, WIDTH)), int(random.uniform(0, HEIGHT-10)))
+			agentA = agent.Agent((i+1), bA, int(random.uniform(0, WIDTH//2)), int(random.uniform(0, HEIGHT)))
+		agentB = agent.Agent(-(i+1), bB, int(random.uniform(WIDTH//2, WIDTH)), int(random.uniform(0, HEIGHT)))
 		
 		# p1A = multiprocessing.Process(target = agentA.run)
 		# p1B = multiprocessing.Process(target = agentB.run)
@@ -79,7 +79,7 @@ def main():
 			agent.update(team_red, team_blue, ball)
 		field.update_positions(team_red, team_blue, ball, canvas)
 		root.update()
-		time.sleep(1)
+		time.sleep(0.1)
 	print('YOYOYO')
 	# stop(pA, pB)
 
