@@ -74,9 +74,9 @@ def main():
 		# print(team_blue)
 
 		for agent in teamA:
-			agent.update(team_red, team_blue, ball)
+			agent.update(team_own=team_red, team_opp=team_blue, ball=ball)
 		for agent in teamB:
-			agent.update(team_red, team_blue, ball)
+			agent.update(team_own=team_blue, team_opp=team_red, ball=ball)
 
 		team_red = [agent.get_coordinates() for agent in teamA]
 		team_blue = [agent.get_coordinates() for agent in teamB]

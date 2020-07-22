@@ -16,17 +16,17 @@ class Agent:
         self.x = x
         self.y = y
     
-    def update(self, team_red, team_blue, ball):
+    def update(self, team_own, team_opp, ball):
         x,y = self.x, self.y
-        # print('Pre', self.b, self.id, team_red, team_blue, ball)
-        self.x, self.y = self.b.next(abs(self.id)-1, team_red, team_blue, ball)
+        # print('Pre', self.b, self.id, team_own, team_opp, ball)
+        self.x, self.y = self.b.next(abs(self.id)-1, team_own, team_opp, ball)
         # print('Agent', self.id, 'moved to ', self.x, self.y, 'from', x, y)
 
-    def run(self, team_red, team_blue, ball):
+    def run(self, team_own, team_opp, ball):
     	while True:
     		try:
     			x,y = self.x, self.y
-	    		self.x, self.y = self.b.next(self.id, team_red, team_blue, ball)
+	    		self.x, self.y = self.b.next(self.id, team_own, team_opp, ball)
 	    		# print('Agent', self.id, 'moved to ', self.x, self.y, 'from', x, y)
 	    		time.sleep(5)
 	    	except Exception as e:
