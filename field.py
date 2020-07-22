@@ -32,7 +32,7 @@ goal_area_width = 60
 goal_area_height = 120
 goal_height = 80
 goal_width = min(x_margin-10, 20)
-player_radius = 4
+player_radius = 10
 ball_radius = 4
 
 # player positions
@@ -115,14 +115,16 @@ def update_positions(team_red, team_blue, new_ball_pos, canvas): #list of agent 
     
     for i in range(TEAM_SIZE):
         old_x, old_y = red_pos[i]
-        new_x, new_y = team_red[i]#.get_coordinates()
+        new_x, new_y = team_red[i]
+        new_x, new_y = new_x+x_margin, new_y+y_margin
         diff_x, diff_y = new_x-old_x, new_y-old_y
         canvas.move(red_players[i], diff_x, diff_y)
         red_pos[i] = (new_x, new_y)
     
     for i in range(TEAM_SIZE):
         old_x, old_y = blue_pos[i]
-        new_x, new_y = team_blue[i]#.get_coordinates()
+        new_x, new_y = team_blue[i]
+        new_x, new_y = new_x+x_margin, new_y+y_margin
         diff_x, diff_y = new_x-old_x, new_y-old_y
         canvas.move(blue_players[i], diff_x, diff_y)
         blue_pos[i] = (new_x, new_y)
