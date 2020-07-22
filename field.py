@@ -129,11 +129,14 @@ def update_positions(team_red, team_blue, new_ball_pos, canvas): #list of agent 
         canvas.move(blue_players[i], diff_x, diff_y)
         blue_pos[i] = (new_x, new_y)
     
-    new_x, new_y = new_ball_pos
     old_x, old_y = ball_pos
+    new_x, new_y = new_ball_pos
+    new_x, new_y = new_x+x_margin, new_y+y_margin
     diff_x, diff_y = new_x-old_x, new_y-old_y
     canvas.move(ball, diff_x, diff_y)
-    ball_pos = new_ball_pos
+    print('ball', old_x, old_y, new_x, new_y, new_ball_pos)
+    ball_pos = (new_x, new_y)
+    # ball_pos = new_ball_pos
 
 '''
 root = Tk()

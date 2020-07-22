@@ -7,6 +7,8 @@ class Behaviour:
 		print('')
 	def next(self, i, j):
 		return i,j
+	def distance(self, playerA, playerB):
+		return abs(playerA[0] - playerB[0]) + abs(playerA[1] - playerB[1])
 
 class Random(Behaviour):
 	def __init__(self):
@@ -40,9 +42,10 @@ class RuleBased(Behaviour):
 		pos_min = 0
 		for i in range(TEAM_SIZE):
 			player = team_red[i]
-			if distance(player, ball) > distance_to_ball:
+			if self.distance(player, ball) > distance_to_ball:
 				distance_to_ball = distance(player, ball)
 				pos_min = i
+		# print('posmin', pos_min, pos)
 		if pos_min == pos: 	# If current player is nearest to the ball
 			if distance_to_ball <= 1: # Current player has the ball
 				nearest_player = -1
@@ -63,6 +66,7 @@ class RuleBased(Behaviour):
 					ball[1] = y2
 					return team_red[pos]
 			else :	# Current player doesnot have the ball but is nearest to the ball
+				print('4 pos', pos)
 				x1,y1 = team_red[pos]
 				if ball[0] > x1:
 					x1 = x1 + 1
@@ -72,9 +76,11 @@ class RuleBased(Behaviour):
 					y1 = y1 + 1
 				elif ball[1] < y1:
 					y1 = y1-1
+				print('Moving to', x1, y1, 'from', team_red[pos], ball)
 				return x1, y1
 		else :	# Current player is not nearest to the ball
 			if distance_to_ball <= 1: # If player at pos_min has the ball
+				print('1 pos', pos)
 				near1 = -1
 				for i in range(TEAM_SIZE):
 					if i != pos_min:
@@ -89,3 +95,15 @@ class RuleBased(Behaviour):
 						y = y + 1
 					return x,y
 				return team_red[pos]
+			else:
+				if pos == pos_min:
+					x,y = team_red[pos]
+					if ball[0] > x:
+						x = x + 1
+					if ball[1] > y:
+						y = y + 1
+					print('2 pos==pos_min', x, y, 'from', team_red[pos])
+					return x,y
+				else:
+					print('3 pos_min', pos_min, 'pos', pos)
+					return team_red[pos]

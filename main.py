@@ -51,7 +51,7 @@ def initialize():
 	#field_ = field.Field()
 	#field_p = multiprocessing.Process(target = field_.main)
 	#field_p.start()
-	print('HHM')
+	# print('HHM')
 	return teamA, teamB
 	# return teamA, teamB, pA, pB
 
@@ -77,10 +77,14 @@ def main():
 			agent.update(team_red, team_blue, ball)
 		for agent in teamB:
 			agent.update(team_red, team_blue, ball)
+
+		team_red = [agent.get_coordinates() for agent in teamA]
+		team_blue = [agent.get_coordinates() for agent in teamB]
+
 		field.update_positions(team_red, team_blue, ball, canvas)
 		root.update()
 		time.sleep(0.1)
-	print('YOYOYO')
+	# print('YOYOYO')
 	# stop(pA, pB)
 
 root = Tk()
