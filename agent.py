@@ -16,6 +16,11 @@ class Agent:
         self.x = x
         self.y = y
     
+    def update(self):
+        x,y = self.x, self.y
+        self.x, self.y = self.b.next(self.x, self.y)
+        print('Agent', self.id, 'moved to ', self.x, self.y, 'from', x, y)
+
     def run(self):
     	while True:
     		try:
