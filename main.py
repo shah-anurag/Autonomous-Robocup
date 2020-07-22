@@ -22,10 +22,16 @@ def initialize():
 	pB = []
 
 	for i in range(0, TEAM_SIZE):
-		b = behaviour.Behaviour()
+
+		bA = behaviour.RuleBased()
+		bB = behaviour.Random()
 		
-		agentA = agent.Agent((i+1), b, int(random.uniform(0, WIDTH)), int(random.uniform(0, HEIGHT)))
-		agentB = agent.Agent(-(i+1), b, int(random.uniform(0, WIDTH)), int(random.uniform(0, HEIGHT)))
+		agentA = None
+		if i == 0:
+			agentA = agent.Agent(1, bA, WIDTH//2 - 1, HEIGHT//2)
+		else:
+			agentA = agent.Agent((i+1), bA, int(random.uniform(0, WIDTH//2)), int(random.uniform(0, HEIGHT-10)))
+		agentB = agent.Agent(-(i+1), bB, int(random.uniform(WIDTH//2, WIDTH)), int(random.uniform(0, HEIGHT-10)))
 		
 		# p1A = multiprocessing.Process(target = agentA.run)
 		# p1B = multiprocessing.Process(target = agentB.run)
@@ -61,14 +67,16 @@ def main():
 	teamA, teamB = initialize()
 	ball = (WIDTH//2, HEIGHT//2)
 	while True:
-		for agent in teamA:
-			agent.update()
-		for agent in teamB:
-			agent.update()
+		
 		team_red = [agent.get_coordinates() for agent in teamA]
 		team_blue = [agent.get_coordinates() for agent in teamB]
-		print(team_red)
-		print(team_blue)
+		# print(team_red)
+		# print(team_blue)
+
+		for agent in teamA:
+			agent.update(team_red, team_blue, ball)
+		for agent in teamB:
+			agent.update(team_red, team_blue, ball)
 		field.update_positions(team_red, team_blue, ball, canvas)
 		root.update()
 		time.sleep(1)
