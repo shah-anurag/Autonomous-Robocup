@@ -1,11 +1,11 @@
-from config import *
+from config_values import *
 
 class Behaviour:
 	def __init__(self):
 		print('')
 	def next(self, i, j):
-		if i+1 < LENGTH:
-			return i+1, j
-		elif i-1 >= 0:
-			return i-1, j
+		if i+10 < LENGTH:
+			return i+10, j
+		elif i-10 >= 0:
+			return i-10, j
 		return i,j

@@ -1,146 +1,154 @@
 from tkinter import Tk, Canvas
 import time
 
-class Field:
+import config_values
 
-    def __init__(self):
-        self.lines_color = "#fff"
-        self.field_color = "#0b0"
-        self.goal_color = "#dd0"
+TEAM_SIZE = config_values.TEAM_SIZE
 
-        self.red_color = "#f00"
-        self.blue_color = "#0cf"
-        self.ball_color = "#000"
+lines_color = "#fff"
+field_color = "#0b0"
+goal_color = "#dd0"
 
-        self.lines_width = 2
+red_color = "#f00"
+blue_color = "#0cf"
+ball_color = "#000"
 
-        self.x_margin = 30
-        self.y_margin = 30
+lines_width = 2
 
-        # measurements in yards, scaled to pixels by factor 10, might adjust later for variable factor
-        # IMPORTANT: width is x-axis on screen, height is y-axis
-        self.field_width = 1200
-        self.field_height = 750
-        self.center_radius = 100
-        self.corner_radius = 10
-        self.penalty_area_width = 180
-        self.penalty_area_height = 440
-        self.penalty_arc_radius = 120
-        self.penalty_arc_center = 120
-        self.goal_area_width = 60
-        self.goal_area_height = 120
-        self.goal_height = 80
-        self.goal_width = min(self.x_margin-10, 20)
-        self.player_radius = 4
-        self.ball_radius = 4
+x_margin = 30
+y_margin = 30
 
-        # player positions
-        self.red_pos = [(i, i) for i in range(10, 120, 10)]
-        self.blue_pos = [(i, i) for i in range(130, 240, 10)]
-        self.ball_pos = (self.x_margin+self.field_width//2, self.y_margin+self.field_height//2)
+# measurements in yards, scaled to pixels by factor 10, might adjust later for variable factor
+# IMPORTANT: width is x-axis on screen, height is y-axis
+field_width = 1200
+field_height = 750
+center_radius = 100
+corner_radius = 10
+penalty_area_width = 180
+penalty_area_height = 440
+penalty_arc_radius = 120
+penalty_arc_center = 120
+goal_area_width = 60
+goal_area_height = 120
+goal_height = 80
+goal_width = min(x_margin-10, 20)
+player_radius = 4
+ball_radius = 4
 
-        # player canvas objects
-        self.TEAM_SIZE = 2
-        self.red_players = [None]*self.TEAM_SIZE
-        self.blue_players = [None]*self.TEAM_SIZE
-        self.ball = None
-        self.root = Tk()
-        self.canvas = Canvas()
+# player positions
+red_pos = [(i, i) for i in range(10, 120, 10)]
+blue_pos = [(i, i) for i in range(130, 240, 10)]
+ball_pos = (x_margin+field_width//2, y_margin+field_height//2)
 
-    def windowDims(self):
-        w = self.field_width + self.x_margin*2
-        h = self.field_height + self.y_margin*2
-        return "{}x{}".format(w, h)
+# player canvas objects
+red_players = [None]*TEAM_SIZE
+blue_players = [None]*TEAM_SIZE
+ball = None
 
 
-    def drawField(self):
-        # draw the background and boundary
-        self.canvas.create_rectangle(self.x_margin, self.y_margin, self.x_margin+self.field_width, self.y_margin+self.field_height, outline=self.lines_color, fill=self.field_color, width=self.lines_width)
-        
-        # draw the half line
-        self.canvas.create_line(self.x_margin+self.field_width//2, self.y_margin, self.x_margin+self.field_width//2, self.y_margin+self.field_height, fill=self.lines_color, width=self.lines_width)
-        
-        # draw the centre circle
-        self.canvas.create_oval(self.x_margin+self.field_width//2-self.center_radius, self.y_margin+self.field_height//2-self.center_radius, self.x_margin+self.field_width//2+self.center_radius, self.y_margin+self.field_height//2+self.center_radius, outline = self.lines_color, width = self.lines_width)
-        
-        # draw the corner arcs, top left, top right, bottom left, bottom right
-        self.canvas.create_arc(self.x_margin-self.corner_radius, self.y_margin-self.corner_radius, self.x_margin+self.corner_radius, self.y_margin+self.corner_radius, start=270, extent=90, outline=self.lines_color, width=self.lines_width, style='arc')
-        self.canvas.create_arc(self.x_margin+self.field_width-self.corner_radius, self.y_margin-self.corner_radius, self.x_margin+self.field_width+self.corner_radius, self.y_margin+self.corner_radius, start=180, extent=90, outline=self.lines_color, width=self.lines_width, style='arc')
-        self.canvas.create_arc(self.x_margin-self.corner_radius, self.y_margin+self.field_height-self.corner_radius, self.x_margin+self.corner_radius, self.y_margin+self.field_height+self.corner_radius, start=0, extent=90, outline=self.lines_color, width=self.lines_width, style='arc')
-        self.canvas.create_arc(self.x_margin+self.field_width-self.corner_radius, self.y_margin+self.field_height-self.corner_radius, self.x_margin+self.field_width+self.corner_radius, self.y_margin+self.field_height+self.corner_radius, start=90, extent=90, outline=self.lines_color, width=self.lines_width, style='arc')
-        
-        # draw the penalty arcs, left side, right side
-        self.canvas.create_arc(self.x_margin+self.penalty_arc_center-self.penalty_arc_radius, self.y_margin+self.field_height//2-self.penalty_arc_radius, self.x_margin+self.penalty_arc_center+self.penalty_arc_radius, self.y_margin+self.field_height//2+self.penalty_arc_radius, start=270, extent=180, outline=self.lines_color, width=self.lines_width, style='arc')
-        self.canvas.create_arc(self.x_margin+self.field_width-self.penalty_arc_center-self.penalty_arc_radius, self.y_margin+self.field_height//2-self.penalty_arc_radius, self.x_margin+self.field_width-self.penalty_arc_center+self.penalty_arc_radius, self.y_margin+self.field_height//2+self.penalty_arc_radius, start=90, extent=180, outline=self.lines_color, width=self.lines_width, style='arc')
-        
-        # draw the penalty areas, left side, right side
-        self.canvas.create_rectangle(self.x_margin, self.y_margin+self.field_height//2-self.penalty_area_height//2, self.x_margin+self.penalty_area_width, self.y_margin+self.field_height//2+self.penalty_area_height//2, fill=self.field_color, outline=self.lines_color, width=self.lines_width)
-        self.canvas.create_rectangle(self.x_margin+self.field_width-self.penalty_area_width, self.y_margin+self.field_height//2-self.penalty_area_height//2, self.x_margin+self.field_width, self.y_margin+self.field_height//2+self.penalty_area_height//2, fill=self.field_color, outline=self.lines_color, width=self.lines_width)
-        
-        #draw the goal areas, left side, right side
-        self.canvas.create_rectangle(self.x_margin, self.y_margin+self.field_height//2-self.goal_area_height//2, self.x_margin+self.goal_area_width, self.y_margin+self.field_height//2+self.goal_area_height//2, outline=self.lines_color, width=self.lines_width)
-        self.canvas.create_rectangle(self.x_margin+self.field_width-self.goal_area_width, self.y_margin+self.field_height//2-self.goal_area_height//2, self.x_margin+self.field_width, self.y_margin+self.field_height//2+self.goal_area_height//2, outline=self.lines_color, width=self.lines_width)
-        
-        #draw the goals, left side, right side
-        self.canvas.create_rectangle(self.x_margin-self.goal_width, self.y_margin+self.field_height//2-self.goal_height//2, self.x_margin, self.y_margin+self.field_height//2+self.goal_height//2, fill=self.goal_color, outline=self.lines_color, width=self.lines_width)
-        self.canvas.create_rectangle(self.x_margin+self.field_width, self.y_margin+self.field_height//2-self.goal_height//2, self.x_margin+self.field_width+self.goal_width, self.y_margin+self.field_height//2+self.goal_height//2, fill=self.goal_color, outline=self.lines_color, width=self.lines_width)
-        
-        self.canvas.pack(fill="both", expand=True)
+def windowDims():
+    w = field_width + x_margin*2
+    h = field_height + y_margin*2
+    return "{}x{}".format(w, h)
 
 
-    def initialize_players(self):
-        for i in range(self.TEAM_SIZE):
-            px, py = self.red_pos[i]
-            self.red_players[i] = self.canvas.create_oval(self.x_margin+px-self.player_radius, self.y_margin+py-self.player_radius, self.x_margin+px+self.player_radius, self.y_margin+py+self.player_radius, fill=self.red_color)
-        for i in range(self.TEAM_SIZE):
-            px, py = self.blue_pos[i]
-            self.blue_players[i] = self.canvas.create_oval(self.x_margin+px-self.player_radius, self.y_margin+py-self.player_radius, self.x_margin+px+self.player_radius, self.y_margin+py+self.player_radius, fill=self.blue_color)
-        self.ball = self.canvas.create_oval(self.ball_pos[0]-self.ball_radius, self.ball_pos[1]-self.ball_radius, self.ball_pos[0]+self.ball_radius, self.ball_pos[1]+self.ball_radius, fill=self.ball_color)
+def drawField(canvas):
+    # draw the background and boundary
+    canvas.create_rectangle(x_margin, y_margin, x_margin+field_width, y_margin+field_height, outline=lines_color, fill=field_color, width=lines_width)
+    
+    # draw the half line
+    canvas.create_line(x_margin+field_width//2, y_margin, x_margin+field_width//2, y_margin+field_height, fill=lines_color, width=lines_width)
+    
+    # draw the centre circle
+    canvas.create_oval(x_margin+field_width//2-center_radius, y_margin+field_height//2-center_radius, x_margin+field_width//2+center_radius, y_margin+field_height//2+center_radius, outline = lines_color, width = lines_width)
+    
+    # draw the corner arcs, top left, top right, bottom left, bottom right
+    canvas.create_arc(x_margin-corner_radius, y_margin-corner_radius, x_margin+corner_radius, y_margin+corner_radius, start=270, extent=90, outline=lines_color, width=lines_width, style='arc')
+    canvas.create_arc(x_margin+field_width-corner_radius, y_margin-corner_radius, x_margin+field_width+corner_radius, y_margin+corner_radius, start=180, extent=90, outline=lines_color, width=lines_width, style='arc')
+    canvas.create_arc(x_margin-corner_radius, y_margin+field_height-corner_radius, x_margin+corner_radius, y_margin+field_height+corner_radius, start=0, extent=90, outline=lines_color, width=lines_width, style='arc')
+    canvas.create_arc(x_margin+field_width-corner_radius, y_margin+field_height-corner_radius, x_margin+field_width+corner_radius, y_margin+field_height+corner_radius, start=90, extent=90, outline=lines_color, width=lines_width, style='arc')
+    
+    # draw the penalty arcs, left side, right side
+    canvas.create_arc(x_margin+penalty_arc_center-penalty_arc_radius, y_margin+field_height//2-penalty_arc_radius, x_margin+penalty_arc_center+penalty_arc_radius, y_margin+field_height//2+penalty_arc_radius, start=270, extent=180, outline=lines_color, width=lines_width, style='arc')
+    canvas.create_arc(x_margin+field_width-penalty_arc_center-penalty_arc_radius, y_margin+field_height//2-penalty_arc_radius, x_margin+field_width-penalty_arc_center+penalty_arc_radius, y_margin+field_height//2+penalty_arc_radius, start=90, extent=180, outline=lines_color, width=lines_width, style='arc')
+    
+    # draw the penalty areas, left side, right side
+    canvas.create_rectangle(x_margin, y_margin+field_height//2-penalty_area_height//2, x_margin+penalty_area_width, y_margin+field_height//2+penalty_area_height//2, fill=field_color, outline=lines_color, width=lines_width)
+    canvas.create_rectangle(x_margin+field_width-penalty_area_width, y_margin+field_height//2-penalty_area_height//2, x_margin+field_width, y_margin+field_height//2+penalty_area_height//2, fill=field_color, outline=lines_color, width=lines_width)
+    
+    #draw the goal areas, left side, right side
+    canvas.create_rectangle(x_margin, y_margin+field_height//2-goal_area_height//2, x_margin+goal_area_width, y_margin+field_height//2+goal_area_height//2, outline=lines_color, width=lines_width)
+    canvas.create_rectangle(x_margin+field_width-goal_area_width, y_margin+field_height//2-goal_area_height//2, x_margin+field_width, y_margin+field_height//2+goal_area_height//2, outline=lines_color, width=lines_width)
+    
+    #draw the goals, left side, right side
+    canvas.create_rectangle(x_margin-goal_width, y_margin+field_height//2-goal_height//2, x_margin, y_margin+field_height//2+goal_height//2, fill=goal_color, outline=lines_color, width=lines_width)
+    canvas.create_rectangle(x_margin+field_width, y_margin+field_height//2-goal_height//2, x_margin+field_width+goal_width, y_margin+field_height//2+goal_height//2, fill=goal_color, outline=lines_color, width=lines_width)
+    
+    canvas.pack(fill="both", expand=True)
 
-    '''
-    def update_positions():
-        global red_players, red_pos, blue_players, blue_pos, ball, ball_pos, canvas
-        for i in range(11):
-            canvas.move(red_players[i], 2, 0)
-            red_pos[i] = (red_pos[i][0]+2, red_pos[i][1])
-        for i in range(11):
-            canvas.move(blue_players[i], 0, 2)
-            blue_pos[i] = (blue_pos[i][0], blue_pos[i][1]+2)
-        canvas.move(ball, 2, 2)
-        ball_pos = (ball_pos[0]+2, ball_pos[1]+2)
-    '''
 
-    def update_positions(self, team_red, team_blue, new_ball_pos): #list of agent objects
-        
-        for i in range(self.TEAM_SIZE):
-            old_x, old_y = self.red_pos[i]
-            new_x, new_y = team_red[i]
-            diff_x, diff_y = new_x-old_x, new_y-old_y
-            self.canvas.move(self.red_players[i], diff_x, diff_y)
-            self.red_pos[i] = (new_x, new_y)
-        
-        for i in range(self.TEAM_SIZE):
-            old_x, old_y = self.blue_pos[i]
-            new_x, new_y = team_blue[i]
-            diff_x, diff_y = new_x-old_x, new_y-old_y
-            self.canvas.move(self.blue_players[i], diff_x, diff_y)
-            self.blue_pos[i] = (new_x, new_y)
-        
-        new_x, new_y = new_ball_pos
-        old_x, old_y = ball_pos
+def initialize_players(canvas):
+    global red_players, blue_players, ball
+    for i in range(TEAM_SIZE):
+        px, py = red_pos[i]
+        red_players[i] = canvas.create_oval(x_margin+px-player_radius, y_margin+py-player_radius, x_margin+px+player_radius, y_margin+py+player_radius, fill=red_color)
+    for i in range(TEAM_SIZE):
+        px, py = blue_pos[i]
+        blue_players[i] = canvas.create_oval(x_margin+px-player_radius, y_margin+py-player_radius, x_margin+px+player_radius, y_margin+py+player_radius, fill=blue_color)
+    ball = canvas.create_oval(ball_pos[0]-ball_radius, ball_pos[1]-ball_radius, ball_pos[0]+ball_radius, ball_pos[1]+ball_radius, fill=ball_color)
+
+'''
+def update_positions():
+    global red_players, red_pos, blue_players, blue_pos, ball, ball_pos, canvas
+    for i in range(11):
+        canvas.move(red_players[i], 2, 0)
+        red_pos[i] = (red_pos[i][0]+2, red_pos[i][1])
+    for i in range(11):
+        canvas.move(blue_players[i], 0, 2)
+        blue_pos[i] = (blue_pos[i][0], blue_pos[i][1]+2)
+    canvas.move(ball, 2, 2)
+    ball_pos = (ball_pos[0]+2, ball_pos[1]+2)
+'''
+
+def update_positions(team_red, team_blue, new_ball_pos, canvas): #list of agent objects
+    global red_players, red_pos, blue_players, blue_pos, ball, ball_pos
+    
+    for i in range(TEAM_SIZE):
+        old_x, old_y = red_pos[i]
+        new_x, new_y = team_red[i]#.get_coordinates()
         diff_x, diff_y = new_x-old_x, new_y-old_y
-        self.canvas.move(self.ball, diff_x, diff_y)
-        self.ball_pos = new_ball_pos
+        canvas.move(red_players[i], diff_x, diff_y)
+        red_pos[i] = (new_x, new_y)
+    
+    for i in range(TEAM_SIZE):
+        old_x, old_y = blue_pos[i]
+        new_x, new_y = team_blue[i]#.get_coordinates()
+        diff_x, diff_y = new_x-old_x, new_y-old_y
+        canvas.move(blue_players[i], diff_x, diff_y)
+        blue_pos[i] = (new_x, new_y)
+    
+    new_x, new_y = new_ball_pos
+    old_x, old_y = ball_pos
+    diff_x, diff_y = new_x-old_x, new_y-old_y
+    canvas.move(ball, diff_x, diff_y)
+    ball_pos = new_ball_pos
 
-    def main(self):
-        # root = Tk()
-        self.root.geometry(self.windowDims())
-        self.root.title("Robocup Simulation")
-        self.canvas = Canvas()
-        self.drawField()
-        self.initialize_players()
-        self.root.mainloop()
-        print("Window closed")
+'''
+root = Tk()
+root.geometry(windowDims())
+root.title("Football")
+canvas = Canvas()
+drawField()
+initialize_players()
 
-# f = Field()
-# f.main()
+
+for i in range(20):
+    time.sleep(0.5)
+    update_positions(canvas)
+    root.update()
+
+
+
+root.mainloop()
+print("Window closed")
+'''
