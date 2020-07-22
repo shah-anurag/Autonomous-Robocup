@@ -133,8 +133,36 @@ def update_positions(team_red, team_blue, new_ball_pos, canvas): #list of agent 
     new_x, new_y = new_ball_pos
     new_x, new_y = new_x+x_margin, new_y+y_margin
     diff_x, diff_y = new_x-old_x, new_y-old_y
+    step = max(diff_x, diff_y)
+
+    c_x,c_y = old_x, old_y
+    m = -1
+    c = 0
+    # if new_x != old_x:
+    #     m = (new_y - old_y) / (new_x - old_x )
+    #     c =  old_y - m*old_x
+    #     while c_x != new_x or c_y != new_y:
+    #         d_x = 0
+    #         d_y = 0
+    #         if c_x != new_x:
+    #             d_x = 1
+    #             d_y = m*c_x + c - c_y
+    #             c_x = c_x + d_x
+    #             c_y = m * c_x + c
+    #         else:
+    #             d_x = 0
+    #             d_y = 1
+    #             c_y = c_y + d_y
+    #         canvas.move(ball, d_x, d_y)
+    #         ball_pos = (c_x, c_y)
+    # else:
+    #     while c_y != new_y:
+    #         c_y = c_y + 1
+    #         canvas.move(ball, 0, 1)
+    #         ball_pos = (c_x, c_y)
+
     canvas.move(ball, diff_x, diff_y)
-    # print('ball', old_x, old_y, new_x, new_y, new_ball_pos)
+    print('ball', old_x, old_y, new_x, new_y, new_ball_pos)
     ball_pos = (new_x, new_y)
     # ball_pos = new_ball_pos
 

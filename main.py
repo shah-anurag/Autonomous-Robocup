@@ -65,7 +65,7 @@ def stop(pA, pB):
 def main():
 	# teamA, teamB, pA, pB = initialize()
 	teamA, teamB = initialize()
-	ball = (WIDTH//2, HEIGHT//2)
+	ball = [WIDTH//2, HEIGHT//2]
 	while True:
 		
 		team_red = [agent.get_coordinates() for agent in teamA]
@@ -83,7 +83,7 @@ def main():
 
 		field.update_positions(team_red, team_blue, ball, canvas)
 		root.update()
-		time.sleep(0.1)
+		time.sleep(0.02)
 	# print('YOYOYO')
 	# stop(pA, pB)
 

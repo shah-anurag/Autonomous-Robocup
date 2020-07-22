@@ -49,17 +49,19 @@ class RuleBased(Behaviour):
 		pos_min = 0
 		for i in range(TEAM_SIZE):
 			player = team_own[i]
-			if self.distance(player, ball) > distance_to_ball:
+			if distance(player, ball) < distance_to_ball:
 				distance_to_ball = distance(player, ball)
 				pos_min = i
 		# print('posmin', pos_min, pos)
 		if pos_min == pos: 	# If current player is nearest to the ball
+			print('5.', pos)
 			if distance_to_ball <= 1: # Current player has the ball
 				nearest_player = -1
 				for i in range(TEAM_SIZE):
 					if i != pos and team_own[i][0] > team_own[pos][0]:
 						if nearest_player == -1 or distance(team_own[i], team_own[pos]) < distance(team_own[pos], team_own[nearest_player]):
 							nearest_player = i
+				# print('nearest Player', nearest_player)
 				if nearest_player == -1:	# No player ahead
 					return team_own[pos]
 				else:						# There is a player ahead
@@ -67,7 +69,9 @@ class RuleBased(Behaviour):
 					x2,y2 = team_own[nearest_player]
 					for i in range(TEAM_SIZE):
 						b1, b2 = team_opp[i]
-						if (y2-y1) * (b1-x2) == (b2-y1) * (x2-x1):
+						epsilon = 1
+						if (y2-y1) * (b1-x2) <= (b2-y1) * (x2-x1) + epsilon and (b2-y1) * (x2-x1) <= (y2-y1) * (b1-x2) + epsilon:
+							exit(1)
 							return team_own[pos]
 					ball[0] = x2+1		# Pass the ball
 					ball[1] = y2
@@ -83,7 +87,7 @@ class RuleBased(Behaviour):
 					y1 = y1 + 1
 				elif ball[1] < y1:
 					y1 = y1-1
-				print('Moving to', x1, y1, 'from', team_own[pos], ball)
+				# print('Moving to', x1, y1, 'from', team_own[pos], ball)
 				return x1, y1
 		else :	# Current player is not nearest to the ball
 			if distance_to_ball <= 1: # If player at pos_min has the ball
@@ -96,21 +100,25 @@ class RuleBased(Behaviour):
 
 				if near1 == pos:
 					x,y = team_own[pos]
-					if team_own[pos_min][0] > x:
+					if team_own[pos_min][0] >= x:
 						x = x + 1
-					if team_own[pos_min][1] > y:
-						y = y + 1
+					# if team_own[pos_min][1] >= y:
+					# 	y = y + 1
 					return x,y
 				return team_own[pos]
 			else:
-				if pos == pos_min:
-					x,y = team_own[pos]
-					if ball[0] > x:
+				print('3 pos_min', pos_min, 'pos', pos)
+				near1 = None
+				for i in range(TEAM_SIZE):
+					if i != pos_min:
+						if near1 == None or distance(team_own[i], team_own[pos_min]) < distance(team_own[pos_min], team_own[near1]):
+							near1 = i
+				if near1 == pos:
+					x, y = team_own[pos]
+					if x <= team_own[pos_min][0]:
 						x = x + 1
-					if ball[1] > y:
-						y = y + 1
-					print('2 pos==pos_min', x, y, 'from', team_own[pos])
+					# if y <= team_own[pos_min][1]:
+					# 	y = y + 1
 					return x,y
 				else:
-					print('3 pos_min', pos_min, 'pos', pos)
 					return team_own[pos]
