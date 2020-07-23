@@ -1,6 +1,7 @@
 import time
 import behaviour as beh
 import os
+import random
 
 class Agent:
     def __init__(self, id_, b, x, y):
@@ -19,6 +20,13 @@ class Agent:
     def update(self, team_own, team_opp, ball):
         x,y = self.x, self.y
         # print('Pre', self.b, self.id, team_own, team_opp, ball)
+        random.seed(random.random() * self.id)
+        rndm = random.randrange(2)
+        if self.id > 0:
+            if rndm == 0:
+                self.b = beh.RuleBased()
+            elif rndm == 1:
+                self.b = beh.Defensive()
         self.x, self.y = self.b.next(abs(self.id)-1, team_own, team_opp, ball)
         # print('Agent', self.id, 'moved to ', self.x, self.y, 'from', x, y)
 
