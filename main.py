@@ -23,7 +23,8 @@ def initialize():
 
 	for i in range(0, TEAM_SIZE):
 
-		bA = behaviour.RuleBased()
+		# bA = behaviour.RuleBased()
+		bA = behaviour.UtilityBased()
 		bB = behaviour.Random()
 		
 		agentA = None

@@ -33,6 +33,8 @@ class Behaviour:
 				# exit(1)
 				return False
 		return True
+	def has_ball(self, player, ball):
+		return distance(player, ball) <= 1
 
 class Random(Behaviour):
 	def __init__(self):
@@ -194,3 +196,66 @@ class Defensive(Behaviour):
 			ball[0] = passto[0]
 			ball[1] = passto[1]
 		return team_own[pos]
+
+class UtilityBased(Behaviour):
+	def __init__(self):
+		super().__init__()
+	
+	def distance_to_goal(self, player, goal=(WIDTH, HEIGHT/2)):
+		return distance(player, goal)
+	
+	def opponent_player_cost(self, player, team_opp):
+		score = 0
+		for i in range(TEAM_SIZE):
+			opp = team_opp[i]
+			score = score + distance(player, opp)
+		return score
+	
+	def distance_from_ball(self, player, ball):
+		return distance(player, ball)
+
+	def next(self, pos, team_own, team_opp, ball):
+		if self.has_ball(team_own[pos], ball) == False:
+			return team_own[pos]
+
+		if ((self.distance_to_goal(team_own[pos]) <= 50.0) and (self.isfree(team_own[pos][0], team_own[pos][1], WIDTH, HEIGHT/2, team_own, team_opp))):
+			ball[0] = WIDTH
+			ball[1] = HEIGHT/2
+			print('Shooting', self.distance_to_goal(team_own[pos], ball) <= 50, ((self.distance_to_goal(team_own[pos], ball) <= 50.0) and (self.isfree(team_own[pos][0], team_own[pos][1], WIDTH, HEIGHT/2, team_own, team_opp))))
+			return team_own[pos]
+		l1 = 0.5
+		l2 = 1
+		l3 = 0.05
+
+		mn_score = -1
+		mn_pos = -1
+		for i in range(TEAM_SIZE):
+			if i == pos:
+				continue
+			current = team_own[i]
+			score = l1*self.distance_to_goal(current) + l2*self.distance_from_ball(current, ball) + l3*self.opponent_player_cost(current, team_opp)
+			# print(l1*self.distance_to_goal(current), l2*self.distance_from_ball(current, ball), l3*self.opponent_player_cost(current, team_opp))
+			if mn_score == -1 or score < mn_score and self.isfree(team_own[pos][0], team_own[pos][1], current[0], current[1], team_own, team_opp):
+				mn_score = score
+				mn_pos = i
+
+		if mn_pos == pos:
+			exit(1)
+			if team_own[pos][0] == WIDTH:
+				return team_own[pos][0]-50, team_own[pos]
+			if self.isfree(team_own[pos][0], team_own[pos][1], team_own[pos][0]+1, team_own[pos][1], team_own, team_opp):
+				return team_own[pos][0]+1, team_own[pos][1]
+			if team_own[pos][1] == HEIGHT:
+				return team_own[pos][0], team_own[pos][1]-50
+			if self.isfree(team_own[pos][0], team_own[pos][1], team_own[pos][0], team_own[pos][1]+1, team_own, team_opp):
+				return team_own[pos][0], team_own[pos][1]+1
+			return team_own[pos][0]+1, team_own[pos][1]
+		else:
+			# passing ball to mn_pos
+			passto = team_own[mn_pos]
+			print('passed ball at', ball, 'to', passto)
+			ball[0] = passto[0]
+			ball[1] = passto[1]
+			print('updated ball', ball)
+			# exit(3)
+			return team_own[pos]
