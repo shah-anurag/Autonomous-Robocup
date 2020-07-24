@@ -29,7 +29,7 @@ class Agent:
                 self.b = beh.Defensive()
             self.b = beh.UtilityBased()
         self.x, self.y = self.b.next(abs(self.id)-1, team_own, team_opp, ball)
-        print('Agent', self.id, ball)
+        # print('Agent', self.id, ball)
         # print('Agent', self.id, 'moved to ', self.x, self.y, 'from', x, y)
 
     def run(self, team_own, team_opp, ball):

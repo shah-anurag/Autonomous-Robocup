@@ -67,7 +67,7 @@ def main():
 	# teamA, teamB, pA, pB = initialize()
 	teamA, teamB = initialize()
 	ball = [WIDTH//2, HEIGHT//2]
-	while True:
+	while ball != [WIDTH, HEIGHT/2]:
 		
 		team_red = [agent.get_coordinates() for agent in teamA]
 		team_blue = [agent.get_coordinates() for agent in teamB]
