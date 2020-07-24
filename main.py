@@ -83,7 +83,7 @@ def main():
 
 		field.update_positions(team_red, team_blue, ball, canvas)
 		root.update()
-		# time.sleep(0.02)
+		# time.sleep(0.1)
 	# print('YOYOYO')
 	# stop(pA, pB)
 

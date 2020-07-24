@@ -10,6 +10,29 @@ class Behaviour:
 		return i,j
 	def distance(self, playerA, playerB):
 		return abs(playerA[0] - playerB[0]) + abs(playerA[1] - playerB[1])
+	def isfree(self, x1, y1, x2, y2, team_own, team_opp):
+		if x2 == x1:
+			x2 = x1+0.001
+		m = (y2 - y1) / (x2 - x1)
+		c = y2 - m*x2
+		for i in range(TEAM_SIZE):
+			opp = team_opp[i]
+			if (distance((x1,y1), opp) > distance((x1,y1), (x2,y2))) or (distance((x2,y2), opp) > distance((x1,y1), (x2,y2))):
+				continue
+			step = 50
+			corners = [(opp[0]+step, opp[1]+step), (opp[0]+step, opp[1]-step), (opp[0]-step, opp[1]+step), (opp[0]-step, opp[1]-step)]
+			o = []
+			for j in range(4):
+				corner = corners[j]
+				o.append(corner[1] - m * corner[0] - c)
+			intercept = False
+			if (o[0]>0 and o[1]>0 and o[2]>0 and o[3]>0) or (o[0]<0 or o[1]<0 or o[2]<0 or o[3]>0):
+				continue
+			else:
+				print('Player in between', x1, y1, x2, y2)
+				# exit(1)
+				return False
+		return True
 
 class Random(Behaviour):
 	def __init__(self):
@@ -72,13 +95,14 @@ class RuleBased(Behaviour):
 				else:						# There is a player ahead
 					x1,y1 = team_own[pos]
 					x2,y2 = team_own[nearest_player]
-					for i in range(TEAM_SIZE):
-						b1, b2 = team_opp[i]
-						epsilon = 1
-						print('Oppponent', (y2-y1) * (b1-x1), (b2-y1) * (x2-x1))
-						if (y2-y1) * (b1-x1) <= (b2-y1) * (x2-x1) + epsilon and (b2-y1) * (x2-x1) <= (y2-y1) * (b1-x1) + epsilon:
-							# exit(1)
-							return team_own[pos]
+					# for i in range(TEAM_SIZE):
+					# 	b1, b2 = team_opp[i]
+					# 	epsilon = 1
+					# 	print('Oppponent', (y2-y1) * (b1-x1), (b2-y1) * (x2-x1))
+					# 	if (y2-y1) * (b1-x1) <= (b2-y1) * (x2-x1) + epsilon and (b2-y1) * (x2-x1) <= (y2-y1) * (b1-x1) + epsilon:
+					# 		# exit(1)
+					if self.isfree(x1, y1, x2, y2, team_own, team_opp) == False:
+						return team_own[pos]
 					ball[0] = x2+1		# Pass the ball
 					ball[1] = y2
 					return team_own[pos]
@@ -139,7 +163,7 @@ class Defensive(Behaviour):
 			else:
 				return team_own[pos]
 
-		if distance(team_own[pos], (WIDTH, HEIGHT/2)) <= 50:
+		if distance(team_own[pos], (WIDTH, HEIGHT/2)) <= 100:
 			ball[0] = WIDTH
 			ball[1] = HEIGHT/2
 			return team_own[pos]
@@ -164,7 +188,9 @@ class Defensive(Behaviour):
 			random.seed(len(behind) * random.random())
 			# print(random.randrange(len(behind)))
 			passto = team_own[behind[random.randrange(len(behind))]]
-			print('passto', passto)
+			# print('passto', passto)
+			if self.isfree(team_own[pos][0], team_own[pos][1], passto[0], passto[1], team_own, team_opp) == False:
+				return team_own[pos]
 			ball[0] = passto[0]
 			ball[1] = passto[1]
 		return team_own[pos]

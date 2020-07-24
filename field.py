@@ -1,5 +1,6 @@
 from tkinter import Tk, Canvas
 import time
+import math
 
 import config_values
 
@@ -135,6 +136,33 @@ def update_positions(team_red, team_blue, new_ball_pos, canvas): #list of agent 
     diff_x, diff_y = new_x-old_x, new_y-old_y
     step = max(diff_x, diff_y)
 
+    mod = math.sqrt(diff_x*diff_x + diff_y*diff_y)
+    c_x, c_y = old_x, old_y
+    speed = 10
+    # print('strt', (c_x, c_y), (new_x, new_y), (c_x != new_x), (c_y != new_y), ((c_x != new_x) or (c_y != new_y)))
+    while ((c_x != new_x) or (c_y != new_y)):
+        unit_vec = (diff_x / mod, diff_y / mod)
+        step_x = unit_vec[0] * speed
+        step_y = unit_vec[1] * speed
+        if c_x == new_x:
+            step_x = 0
+        if c_y == new_y:
+            step_y = 0
+        # print(c_x, new_x, c_y, new_y, step_x, step_y)
+        if ((c_x>new_x) and (c_x+step_x < new_x)) or ((c_x < new_x) and (c_x + step_x) > new_x):
+            step_x = new_x - c_x
+            c_x = new_x
+        else:
+            c_x = c_x + step_x
+        if ((c_y>new_y) and (c_y+step_y < new_y)) or ((c_y < new_y) and (c_y + step_y) > new_y):
+            step_y = new_y - c_y
+            c_y = new_y
+        else:
+            c_y = c_y + step_y
+        ball_pos = (c_x, c_y)
+        canvas.move(ball, step_x, step_y)
+        canvas.update()
+        time.sleep(0.01)
     # c_x, c_y = old_x, old_y
     # m = -1
     # c = 0
@@ -166,9 +194,9 @@ def update_positions(team_red, team_blue, new_ball_pos, canvas): #list of agent 
     #         ball_pos = (c_x, c_y)
     #         # sleep(1)
 
-    canvas.move(ball, diff_x, diff_y)
+    # canvas.move(ball, diff_x, diff_y)
     # print('ball', ball_pos, old_x, old_y, new_x, new_y, new_ball_pos)
-    ball_pos = (new_x, new_y)
+    # ball_pos = (new_x, new_y)
     # ball_pos = new_ball_pos
 
 '''
