@@ -139,7 +139,7 @@ def update_positions(team_red, team_blue, new_ball_pos, canvas): #list of agent 
     mod = math.sqrt(diff_x*diff_x + diff_y*diff_y)
     c_x, c_y = old_x, old_y
     speed = 10
-    print('strt', (c_x, c_y), (new_x, new_y), (c_x != new_x), (c_y != new_y), ((c_x != new_x) or (c_y != new_y)))
+    # print('strt', (c_x, c_y), (new_x, new_y), (c_x != new_x), (c_y != new_y), ((c_x != new_x) or (c_y != new_y)))
     while ((c_x != new_x) or (c_y != new_y)):
         unit_vec = (diff_x / mod, diff_y / mod)
         step_x = unit_vec[0] * speed

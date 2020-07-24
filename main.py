@@ -84,6 +84,8 @@ def main():
 
 		field.update_positions(team_red, team_blue, ball, canvas)
 		root.update()
+		print(ball)
+		# exit(11)
 		# time.sleep(0.1)
 	# print('YOYOYO')
 	# stop(pA, pB)

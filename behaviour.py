@@ -215,6 +215,7 @@ class UtilityBased(Behaviour):
 		return distance(player, ball)
 
 	def next(self, pos, team_own, team_opp, ball):
+		print('Evaluating for', pos)
 		if self.has_ball(team_own[pos], ball) == False:
 			return team_own[pos]
 
@@ -230,26 +231,30 @@ class UtilityBased(Behaviour):
 		mn_score = -1
 		mn_pos = -1
 		for i in range(TEAM_SIZE):
-			if i == pos:
-				continue
 			current = team_own[i]
-			score = l1*self.distance_to_goal(current) + l2*self.distance_from_ball(current, ball) + l3*self.opponent_player_cost(current, team_opp)
-			# print(l1*self.distance_to_goal(current), l2*self.distance_from_ball(current, ball), l3*self.opponent_player_cost(current, team_opp))
+			score = l1*self.distance_to_goal(current) + l3*self.opponent_player_cost(current, team_opp)
+			print(i, score, l1*self.distance_to_goal(current), l2*self.distance_from_ball(current, ball), l3*self.opponent_player_cost(current, team_opp))
 			if mn_score == -1 or score < mn_score and self.isfree(team_own[pos][0], team_own[pos][1], current[0], current[1], team_own, team_opp):
 				mn_score = score
 				mn_pos = i
 
 		if mn_pos == pos:
-			exit(1)
+			step = 10
+			print('Here', pos, team_own[pos])
 			if team_own[pos][0] == WIDTH:
+				ball[0] = ball[0] - 50
 				return team_own[pos][0]-50, team_own[pos]
-			if self.isfree(team_own[pos][0], team_own[pos][1], team_own[pos][0]+1, team_own[pos][1], team_own, team_opp):
-				return team_own[pos][0]+1, team_own[pos][1]
+			if self.isfree(team_own[pos][0], team_own[pos][1], team_own[pos][0]+step, team_own[pos][1], team_own, team_opp):
+				ball[0] = ball[0] + step
+				return team_own[pos][0]+step, team_own[pos][1]
 			if team_own[pos][1] == HEIGHT:
+				ball[1] = ball[1] - 50
 				return team_own[pos][0], team_own[pos][1]-50
-			if self.isfree(team_own[pos][0], team_own[pos][1], team_own[pos][0], team_own[pos][1]+1, team_own, team_opp):
-				return team_own[pos][0], team_own[pos][1]+1
-			return team_own[pos][0]+1, team_own[pos][1]
+			if self.isfree(team_own[pos][0], team_own[pos][1], team_own[pos][0], team_own[pos][1]+step, team_own, team_opp):
+				ball[1] = ball[1] + step
+				return team_own[pos][0], team_own[pos][1]+step
+			ball[0] = ball[0]+step
+			return team_own[pos][0]+step, team_own[pos][1]
 		else:
 			# passing ball to mn_pos
 			passto = team_own[mn_pos]
