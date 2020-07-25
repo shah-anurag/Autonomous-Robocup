@@ -29,7 +29,7 @@ class Behaviour:
 			if (o[0]>0 and o[1]>0 and o[2]>0 and o[3]>0) or (o[0]<0 or o[1]<0 or o[2]<0 or o[3]>0):
 				continue
 			else:
-				print('Player in between', x1, y1, x2, y2)
+				# print('Player in between', x1, y1, x2, y2)
 				# exit(1)
 				return False
 		return True
@@ -273,7 +273,10 @@ class UtilityBased(Behaviour):
 		# if not have ball, then move toward the ball slowly
 		if self.has_ball(team_own[pos], ball) == False:
 			#new_pos = self.move_toward_ball(team_own[pos], ball)
-			new_pos = self.slow_move_and_decluster(pos, team_own, ball)
+			if(ball[0]==WIDTH/2 and ball[1]==HEIGHT/2):
+				new_pos = self.move_toward_ball(team_own[pos], ball)
+			else:
+				new_pos = self.slow_move_and_decluster(pos, team_own, ball)
 			return new_pos
 		#return team_own[pos]	
 		# if close to goal and nobody in between then shoot
@@ -296,8 +299,8 @@ class UtilityBased(Behaviour):
 			#	continue
 			current = team_own[i]
 			# check if way is clear, if not clear then ignore current
-			#if (not self.isfree(team_own[pos][0], team_own[pos][1], current[0], current[1], team_own, team_opp)):
-			#	continue
+			if (not self.isfree(team_own[pos][0], team_own[pos][1], current[0], current[1], team_own, team_opp)):
+				continue
 			score = l1*self.distance_to_goal(current) + l2*self.distance_from_ball(current, ball) + l3*self.opponent_player_cost(current, team_opp)
 			# print(l1*self.distance_to_goal(current), l2*self.distance_from_ball(current, ball), l3*self.opponent_player_cost(current, team_opp))
 			if(score>max_score):
@@ -323,3 +326,60 @@ class UtilityBased(Behaviour):
 			#print('updated ball', ball)
 			# exit(3)
 			return team_own[pos]
+			
+class Defenders(Behaviour):
+	def __init__(self):
+		super().__init__()
+	
+	def interfere_point(self, ball, goal=(WIDTH, HEIGHT/2)):
+		target_x, target_y = (ball[0]+goal[0])/2, (ball[1]+goal[1])/2
+		return target_x, target_y
+	
+	def center_of_cluster(self, pos, team_own):
+		player = team_own[pos]
+		others = team_own[:pos]+team_own[pos+1:]
+		so_oth = sorted(others, key=lambda x:distance(x, player))
+		return so_oth[0]
+	
+	def move_between_ball_and_goal(self, player, ball,  goal=(WIDTH, HEIGHT/2)):
+		target = self.interfere_point(ball)
+		mag = ((target[0]-player[0])**2 + (target[1]-player[1])**2)**0.5
+		direction = ((target[0]-player[0])/mag, (target[1]-player[1])/mag)
+		dx, dy = direction[0]*TIMESTEP*PASSIVE_SPEED, direction[1]*TIMESTEP*PASSIVE_SPEED
+		new_x, new_y = player[0]+dx, player[1]+dy
+		return new_x, new_y
+		
+	def interfere_and_decluster(self, pos, team_own, ball, goal=(WIDTH, HEIGHT/2)):
+		decluster_fac = 0.8
+		move_ahead_fac = 0.5
+		
+		norm = decluster_fac+move_ahead_fac
+		decluster_fac /= norm
+		move_ahead_fac /= norm
+		player = team_own[pos]
+		
+		target = self.interfere_point(ball)
+		mag = ((target[0]-player[0])**2 + (target[1]-player[1])**2)**0.5
+		direction = ((target[0]-player[0])/mag, (target[1]-player[1])/mag)
+		dx1, dy1 = direction[0]*TIMESTEP*DEFEND_SPEED, direction[1]*TIMESTEP*DEFEND_SPEED
+		
+		centroid = self.center_of_cluster(pos, team_own)
+		decluster_thresh = 300
+		if(distance(player, centroid)>decluster_thresh):
+			dx2, dy2 = 0, 0
+		else:
+			mag = ((centroid[0]-player[0])**2 + (centroid[1]-player[1])**2)**0.5
+			direction = ((centroid[0]-player[0])/mag, (centroid[1]-player[1])/mag)
+			dx2, dy2 = direction[0]*TIMESTEP*PASSIVE_SPEED, direction[1]*TIMESTEP*PASSIVE_SPEED
+		
+		
+		new_x = player[0]+move_ahead_fac*dx1-decluster_fac*dx2
+		new_y = player[1]+move_ahead_fac*dy1-decluster_fac*dy2
+		return new_x, new_y
+
+	
+	def next(self, pos, team_own, team_opp, ball):
+		if(ball[0]==WIDTH and ball[1]==HEIGHT/2):
+			return team_own[pos]
+		new_pos = self.interfere_and_decluster(pos, team_own, ball)
+		return new_pos

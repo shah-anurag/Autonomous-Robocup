@@ -21,13 +21,13 @@ def initialize():
 
 		# bA = behaviour.RuleBased()
 		bA = behaviour.UtilityBased()
-		bB = behaviour.Random()
+		bB = behaviour.Defenders()
 		
-		agentA = None
-		if i == 0:
-			agentA = agent.Agent(1, bA, WIDTH//2, HEIGHT//2)
-		else:
-			agentA = agent.Agent((i+1), bA, int(random.uniform(0, WIDTH//2)), int(random.uniform(0, HEIGHT)))
+		#agentA = None
+		#if i == 0:
+		#	agentA = agent.Agent(1, bA, WIDTH//2, HEIGHT//2)
+		#else:
+		agentA = agent.Agent((i+1), bA, int(random.uniform(0, WIDTH//2)), int(random.uniform(0, HEIGHT)))
 		agentB = agent.Agent(-(i+1), bB, int(random.uniform(WIDTH//2, WIDTH)), int(random.uniform(0, HEIGHT)))
 		
 		# p1A = multiprocessing.Process(target = agentA.run)
