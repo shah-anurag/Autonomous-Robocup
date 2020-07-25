@@ -17,20 +17,19 @@ class Behaviour:
 		c = y2 - m*x2
 		for i in range(TEAM_SIZE):
 			opp = team_opp[i]
-			if (distance((x1,y1), opp) > distance((x1,y1), (x2,y2))) or (distance((x2,y2), opp) > distance((x1,y1), (x2,y2))):
+			eps = 100
+			if (distance((x1,y1), opp) > distance((x1,y1), (x2,y2))) + eps or (distance((x2,y2), opp) > distance((x1,y1), (x2,y2))) + eps:
 				continue
-			step = 50
-			corners = [(opp[0]+step, opp[1]+step), (opp[0]+step, opp[1]-step), (opp[0]-step, opp[1]+step), (opp[0]-step, opp[1]-step)]
+			step = 200
+			corners = [(opp[0], opp[1]), (opp[0]+step, opp[1]+step), (opp[0]+step, opp[1]-step), (opp[0]-step, opp[1]+step), (opp[0]-step, opp[1]-step)]
 			o = []
-			for j in range(4):
+			for j in range(len(corners)):
 				corner = corners[j]
 				o.append(corner[1] - m * corner[0] - c)
-			intercept = False
-			if (o[0]>0 and o[1]>0 and o[2]>0 and o[3]>0) or (o[0]<0 or o[1]<0 or o[2]<0 or o[3]>0):
+			if (o[0]>0 and o[1]>0 and o[2]>0 and o[3]>0) or (o[0]<0 or o[1]<0 or o[2]<0 or o[3]<0):
 				continue
 			else:
 				# print('Player in between', x1, y1, x2, y2)
-				# exit(1)
 				return False
 		return True
 	def has_ball(self, player, ball):
@@ -80,7 +79,6 @@ class RuleBased(Behaviour):
 				pos_min = i
 		# print('posmin', pos_min, pos)
 		if pos_min == pos: 	# If current player is nearest to the ball
-			# print('5.', pos)
 			if distance_to_ball <= 1: # Current player has the ball
 				if distance(team_own[pos], (WIDTH, HEIGHT/2)) <= 50:
 					ball[0] = WIDTH
@@ -97,19 +95,12 @@ class RuleBased(Behaviour):
 				else:						# There is a player ahead
 					x1,y1 = team_own[pos]
 					x2,y2 = team_own[nearest_player]
-					# for i in range(TEAM_SIZE):
-					# 	b1, b2 = team_opp[i]
-					# 	epsilon = 1
-					# 	print('Oppponent', (y2-y1) * (b1-x1), (b2-y1) * (x2-x1))
-					# 	if (y2-y1) * (b1-x1) <= (b2-y1) * (x2-x1) + epsilon and (b2-y1) * (x2-x1) <= (y2-y1) * (b1-x1) + epsilon:
-					# 		# exit(1)
 					if self.isfree(x1, y1, x2, y2, team_own, team_opp) == False:
 						return team_own[pos]
 					ball[0] = x2+1		# Pass the ball
 					ball[1] = y2
 					return team_own[pos]
 			else :	# Current player doesnot have the ball but is nearest to the ball
-				# print('4 pos', pos)
 				x1,y1 = team_own[pos]
 				if ball[0] > x1:
 					x1 = x1 + 1
@@ -119,11 +110,9 @@ class RuleBased(Behaviour):
 					y1 = y1 + 1
 				elif ball[1] < y1:
 					y1 = y1 - 1
-				# print('Moving to', x1, y1, 'from', team_own[pos], ball)
 				return x1, y1
 		else :	# Current player is not nearest to the ball
 			if distance_to_ball <= 1: # If player at pos_min has the ball
-				# print('1 pos', pos)
 				near1 = -1
 				for i in range(TEAM_SIZE):
 					if i != pos_min:
@@ -139,7 +128,6 @@ class RuleBased(Behaviour):
 					return x,y
 				return team_own[pos]
 			else:
-				# print('3 pos_min', pos_min, 'pos', pos)
 				near1 = None
 				for i in range(TEAM_SIZE):
 					if i != pos_min:
@@ -330,6 +318,17 @@ class UtilityBased(Behaviour):
 class Defenders(Behaviour):
 	def __init__(self):
 		super().__init__()
+
+	def var_speed(self, pos, team_own, ball):
+		d = self.distance(team_own[pos], ball)
+		dmax = 0
+		for i in range(TEAM_SIZE):
+			dmax = max(dmax, distance(team_own[i], ball))
+		if d*3 <= dmax:
+			return 5
+		if d*3 <= dmax*2:
+			return 2.5
+		return 1
 	
 	def interfere_point(self, ball, goal=(WIDTH, HEIGHT/2)):
 		target_x, target_y = (ball[0]+goal[0])/2, (ball[1]+goal[1])/2
@@ -373,8 +372,8 @@ class Defenders(Behaviour):
 			dx2, dy2 = direction[0]*TIMESTEP*PASSIVE_SPEED, direction[1]*TIMESTEP*PASSIVE_SPEED
 		
 		
-		new_x = player[0]+move_ahead_fac*dx1-decluster_fac*dx2
-		new_y = player[1]+move_ahead_fac*dy1-decluster_fac*dy2
+		new_x = player[0]+(move_ahead_fac*dx1-decluster_fac*dx2)*self.var_speed(pos, team_own, ball)
+		new_y = player[1]+(move_ahead_fac*dy1-decluster_fac*dy2)*self.var_speed(pos, team_own, ball)
 		return new_x, new_y
 
 	
