@@ -6,11 +6,7 @@ import behaviour
 import random
 import multiprocessing
 import field
-import config_values
-
-TEAM_SIZE = config_values.TEAM_SIZE
-HEIGHT = config_values.HEIGHT
-WIDTH = config_values.WIDTH
+from config_values import *
 
 canvas = None
 root = None
@@ -67,7 +63,7 @@ def main():
 	# teamA, teamB, pA, pB = initialize()
 	teamA, teamB = initialize()
 	ball = [WIDTH//2, HEIGHT//2]
-	while ball != [WIDTH, HEIGHT/2]:
+	while True:
 		
 		team_red = [agent.get_coordinates() for agent in teamA]
 		team_blue = [agent.get_coordinates() for agent in teamB]
@@ -84,9 +80,7 @@ def main():
 
 		field.update_positions(team_red, team_blue, ball, canvas)
 		root.update()
-		print(ball)
-		# exit(11)
-		# time.sleep(0.1)
+		time.sleep(TIMESTEP)
 	# print('YOYOYO')
 	# stop(pA, pB)
 

@@ -34,7 +34,7 @@ class Behaviour:
 				return False
 		return True
 	def has_ball(self, player, ball):
-		return distance(player, ball) <= 1
+		return distance(player, ball) <= 2
 
 class Random(Behaviour):
 	def __init__(self):
@@ -208,58 +208,118 @@ class UtilityBased(Behaviour):
 		score = 0
 		for i in range(TEAM_SIZE):
 			opp = team_opp[i]
-			score = score + distance(player, opp)
-		return -score
+			score = score + distance(player, opp)#**2
+		return score
 	
 	def distance_from_ball(self, player, ball):
 		return distance(player, ball)
+		
+	def move_toward_ball(self, player, ball):
+		mag = ((ball[0]-player[0])**2 + (ball[1]-player[1])**2)**0.5
+		direction = ((ball[0]-player[0])/mag, (ball[1]-player[1])/mag)
+		dx, dy = direction[0]*TIMESTEP*PASSIVE_SPEED, direction[1]*TIMESTEP*PASSIVE_SPEED
+		new_x, new_y = player[0]+dx, player[1]+dy
+		return new_x, new_y
+		
+	def move_toward_goal(self, player, goal=(WIDTH, HEIGHT/2)):
+		mag = ((goal[0]-player[0])**2 + (goal[1]-player[1])**2)**0.5
+		direction = ((goal[0]-player[0])/mag, (goal[1]-player[1])/mag)
+		dx, dy = direction[0]*TIMESTEP*ACTIVE_SPEED, direction[1]*TIMESTEP*ACTIVE_SPEED
+		new_x, new_y = player[0]+dx, player[1]+dy
+		return new_x, new_y
+		
+	def center_of_cluster(self, pos, team_own):
+		player = team_own[pos]
+		others = team_own[:pos]+team_own[pos+1:]
+		so_oth = sorted(others, key=lambda x:distance(x, player))
+		return so_oth[0]
+	
+	def slow_move_and_decluster(self, pos, team_own, ball, goal=(WIDTH, HEIGHT/2)):
+		decluster_fac = 0.5
+		move_ahead_fac = 0.8
+		ball_fac = 0.1
+		
+		norm = decluster_fac+move_ahead_fac+ball_fac
+		decluster_fac /= norm
+		move_ahead_fac /= norm
+		ball_fac /= norm
+		player = team_own[pos]
+		
+		mag = ((goal[0]-player[0])**2 + (goal[1]-player[1])**2)**0.5
+		direction = ((goal[0]-player[0])/mag, (goal[1]-player[1])/mag)
+		dx1, dy1 = direction[0]*TIMESTEP*PASSIVE_SPEED, direction[1]*TIMESTEP*PASSIVE_SPEED
+		
+		centroid = self.center_of_cluster(pos, team_own)
+		decluster_thresh = 200
+		if(distance(player, centroid)>decluster_thresh):
+			dx2, dy2 = 0, 0
+		else:
+			mag = ((centroid[0]-player[0])**2 + (centroid[1]-player[1])**2)**0.5
+			direction = ((centroid[0]-player[0])/mag, (centroid[1]-player[1])/mag)
+			dx2, dy2 = direction[0]*TIMESTEP*PASSIVE_SPEED, direction[1]*TIMESTEP*PASSIVE_SPEED
+		
+		mag = ((ball[0]-player[0])**2 + (ball[1]-player[1])**2)**0.5
+		direction = ((ball[0]-player[0])/mag, (ball[1]-player[1])/mag)
+		dx3, dy3 = direction[0]*TIMESTEP*PASSIVE_SPEED, direction[1]*TIMESTEP*PASSIVE_SPEED
+		
+		new_x = player[0]+move_ahead_fac*dx1-decluster_fac*dx2+ball_fac*dx3
+		new_y = player[1]+move_ahead_fac*dy1-decluster_fac*dy2+ball_fac*dy3
+		return new_x, new_y
 
 	def next(self, pos, team_own, team_opp, ball):
-		print('Evaluating for', pos)
-		if self.has_ball(team_own[pos], ball) == False:
+		# if ball is at goal, then stop
+		if(ball[0]==WIDTH and ball[1]==HEIGHT/2):
 			return team_own[pos]
-
-		if ((self.distance_to_goal(team_own[pos]) <= 100.0) and (self.isfree(team_own[pos][0], team_own[pos][1], WIDTH, HEIGHT/2, team_own, team_opp))):
+		# if not have ball, then move toward the ball slowly
+		if self.has_ball(team_own[pos], ball) == False:
+			#new_pos = self.move_toward_ball(team_own[pos], ball)
+			new_pos = self.slow_move_and_decluster(pos, team_own, ball)
+			return new_pos
+		#return team_own[pos]	
+		# if close to goal and nobody in between then shoot
+		if ((self.distance_to_goal(team_own[pos]) <= 50.0) and (self.isfree(team_own[pos][0], team_own[pos][1], WIDTH, HEIGHT/2, team_own, team_opp))):
 			ball[0] = WIDTH
 			ball[1] = HEIGHT/2
-			print('Shooting', self.distance_to_goal(team_own[pos], ball) <= 100, ((self.distance_to_goal(team_own[pos], ball) <= 50.0) and (self.isfree(team_own[pos][0], team_own[pos][1], WIDTH, HEIGHT/2, team_own, team_opp))))
+			print('Goal Done, stopping players')
+			#print('Shooting', self.distance_to_goal(team_own[pos], ball) <= 50, ((self.distance_to_goal(team_own[pos], ball) <= 50.0) and (self.isfree(team_own[pos][0], team_own[pos][1], WIDTH, HEIGHT/2, team_own, team_opp))))
 			return team_own[pos]
-		l1 = 0.5
-		l2 = 1
-		l3 = 1
+		
+		# choose whether to move forward or pass
+		l1 = -0.5 # weight for candidate close to goal, less is better
+		l2 = -0.5 # weight for candidate close to ball, less is better
+		l3 = 0.2 # weight for candidate close to opponents, more is better
 
-		mn_score = -1
-		mn_pos = -1
+		max_score = -100000
+		max_pos = -1
 		for i in range(TEAM_SIZE):
+			# if i == pos:
+			#	continue
 			current = team_own[i]
+			# check if way is clear, if not clear then ignore current
+			#if (not self.isfree(team_own[pos][0], team_own[pos][1], current[0], current[1], team_own, team_opp)):
+			#	continue
 			score = l1*self.distance_to_goal(current) + l2*self.distance_from_ball(current, ball) + l3*self.opponent_player_cost(current, team_opp)
-			print(i, score, l1*self.distance_to_goal(current), l2*self.distance_from_ball(current, ball), l3*self.opponent_player_cost(current, team_opp))
-			if mn_score == -1 or score < mn_score and self.isfree(team_own[pos][0], team_own[pos][1], current[0], current[1], team_own, team_opp):
-				mn_score = score
-				mn_pos = i
-
-		if mn_pos == pos:
-			step = 10
-			# print('Here', pos, team_own[pos])
-			if team_own[pos][0] == WIDTH:
-				print('Herere')
-				ball[0] = ball[0] - step * 5
-				ball[1] = ball[1] + 0.1 * (HEIGHT/2 - ball[1])
-			elif self.isfree(team_own[pos][0], team_own[pos][1], team_own[pos][0]+step, team_own[pos][1], team_own, team_opp):
-				ball[0] = min(WIDTH, ball[0]+step)
-			elif team_own[pos][1] == HEIGHT:
-				ball[1] = ball[1] - step * 5
-			elif self.isfree(team_own[pos][0], team_own[pos][1], team_own[pos][0], team_own[pos][1]+step, team_own, team_opp):
-				ball[1] = min(HEIGHT, ball[1]+step)
-			else:
-				ball[0] = min(WIDTH, ball[0]+step)
-			return ball[0], ball[1]
+			# print(l1*self.distance_to_goal(current), l2*self.distance_from_ball(current, ball), l3*self.opponent_player_cost(current, team_opp))
+			if(score>max_score):
+				max_score = score
+				max_pos = i
+		
+		if max_pos==-1:
+			max_pos = pos
+		
+		if max_pos==pos:
+			new_pos = self.move_toward_goal(team_own[pos])
+			ball[0] = new_pos[0]
+			ball[1] = new_pos[1]
+			#print('updated ball', ball)
+			return new_pos
+			
 		else:
 			# passing ball to mn_pos
-			passto = team_own[mn_pos]
+			passto = team_own[max_pos]
 			print('passed ball at', ball, 'to', passto)
 			ball[0] = passto[0]
 			ball[1] = passto[1]
-			# print('updated ball', ball)
+			#print('updated ball', ball)
 			# exit(3)
 			return team_own[pos]
