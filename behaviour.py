@@ -29,7 +29,6 @@ class Behaviour:
 			if (o[0]>0 and o[1]>0 and o[2]>0 and o[3]>0) or (o[0]<0 or o[1]<0 or o[2]<0 or o[3]<0):
 				continue
 			else:
-				# print('Player in between', x1, y1, x2, y2)
 				return False
 		return True
 	def has_ball(self, player, ball):
@@ -77,7 +76,6 @@ class RuleBased(Behaviour):
 			if distance(player, ball) < distance_to_ball:
 				distance_to_ball = distance(player, ball)
 				pos_min = i
-		# print('posmin', pos_min, pos)
 		if pos_min == pos: 	# If current player is nearest to the ball
 			if distance_to_ball <= 1: # Current player has the ball
 				if distance(team_own[pos], (WIDTH, HEIGHT/2)) <= 50:
@@ -89,7 +87,6 @@ class RuleBased(Behaviour):
 					if i != pos and team_own[i][0] > team_own[pos][0]:
 						if nearest_player == -1 or distance(team_own[i], team_own[pos]) < distance(team_own[pos], team_own[nearest_player]):
 							nearest_player = i
-				# print('nearest Player', nearest_player)
 				if nearest_player == -1:	# No player ahead
 					return team_own[pos]
 				else:						# There is a player ahead
@@ -176,9 +173,7 @@ class Defensive(Behaviour):
 						behind.append(i)
 		if len(behind) > 0:
 			random.seed(len(behind) * random.random())
-			# print(random.randrange(len(behind)))
 			passto = team_own[behind[random.randrange(len(behind))]]
-			# print('passto', passto)
 			if self.isfree(team_own[pos][0], team_own[pos][1], passto[0], passto[1], team_own, team_opp) == False:
 				return team_own[pos]
 			ball[0] = passto[0]
@@ -302,7 +297,6 @@ class UtilityBased(Behaviour):
 			new_pos = self.move_toward_goal(team_own[pos])
 			ball[0] = new_pos[0]
 			ball[1] = new_pos[1]
-			#print('updated ball', ball)
 			return new_pos
 			
 		else:
@@ -311,8 +305,6 @@ class UtilityBased(Behaviour):
 			print('passed ball at', ball, 'to', passto)
 			ball[0] = passto[0]
 			ball[1] = passto[1]
-			#print('updated ball', ball)
-			# exit(3)
 			return team_own[pos]
 			
 class Defenders(Behaviour):

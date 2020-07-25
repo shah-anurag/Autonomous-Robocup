@@ -98,26 +98,12 @@ def initialize_players(canvas):
         blue_players[i] = canvas.create_oval(x_margin+px-player_radius, y_margin+py-player_radius, x_margin+px+player_radius, y_margin+py+player_radius, fill=blue_color)
     ball = canvas.create_oval(ball_pos[0]-ball_radius, ball_pos[1]-ball_radius, ball_pos[0]+ball_radius, ball_pos[1]+ball_radius, fill=ball_color)
 
-'''
-def update_positions():
-    global red_players, red_pos, blue_players, blue_pos, ball, ball_pos, canvas
-    for i in range(11):
-        canvas.move(red_players[i], 2, 0)
-        red_pos[i] = (red_pos[i][0]+2, red_pos[i][1])
-    for i in range(11):
-        canvas.move(blue_players[i], 0, 2)
-        blue_pos[i] = (blue_pos[i][0], blue_pos[i][1]+2)
-    canvas.move(ball, 2, 2)
-    ball_pos = (ball_pos[0]+2, ball_pos[1]+2)
-'''
-
 def update_positions(team_red, team_blue, new_ball_pos, canvas): #list of agent objects
     global red_players, red_pos, blue_players, blue_pos, ball, ball_pos
     
     for i in range(TEAM_SIZE):
         old_x, old_y = red_pos[i]
         new_x, new_y = team_red[i]
-        # new_x, new_y = new_x+x_margin, new_y+y_margin
         diff_x, diff_y = new_x-old_x, new_y-old_y
         canvas.move(red_players[i], diff_x, diff_y)
         red_pos[i] = (new_x, new_y)
@@ -125,7 +111,6 @@ def update_positions(team_red, team_blue, new_ball_pos, canvas): #list of agent 
     for i in range(TEAM_SIZE):
         old_x, old_y = blue_pos[i]
         new_x, new_y = team_blue[i]
-        # new_x, new_y = new_x+x_margin, new_y+y_margin
         diff_x, diff_y = new_x-old_x, new_y-old_y
         canvas.move(blue_players[i], diff_x, diff_y)
         blue_pos[i] = (new_x, new_y)
@@ -139,7 +124,6 @@ def update_positions(team_red, team_blue, new_ball_pos, canvas): #list of agent 
     mod = math.sqrt(diff_x*diff_x + diff_y*diff_y)
     c_x, c_y = old_x, old_y
     speed = 10
-    # print('strt', (c_x, c_y), (new_x, new_y), (c_x != new_x), (c_y != new_y), ((c_x != new_x) or (c_y != new_y)))
     while ((c_x != new_x) or (c_y != new_y)):
         unit_vec = (diff_x / mod, diff_y / mod)
         step_x = unit_vec[0] * speed
@@ -148,7 +132,6 @@ def update_positions(team_red, team_blue, new_ball_pos, canvas): #list of agent 
             step_x = 0
         if c_y == new_y:
             step_y = 0
-        # print(c_x, new_x, c_y, new_y, step_x, step_y)
         if ((c_x>new_x) and (c_x+step_x < new_x)) or ((c_x < new_x) and (c_x + step_x) > new_x):
             step_x = new_x - c_x
             c_x = new_x
